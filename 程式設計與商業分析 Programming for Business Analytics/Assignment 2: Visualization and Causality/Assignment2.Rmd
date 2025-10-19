@@ -1,0 +1,247 @@
+---
+title: "Assignment2"
+author: "111072219 Fiona Liou"
+date: "2025-10-16"
+output: 
+  pdf_document: 
+     latex_engine: xelatex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+# PART I
+
+```{r}
+air99 <- as_tibble(read.csv(url("https://bit.ly/3c4AHbL")))
+air12 <- as_tibble(read.csv(url("https://bit.ly/3nZicL2")))
+```
+
+## Question 1
+
+```{r}
+air_combined <- bind_rows(
+  air99 |> 
+    mutate(Year = 1999) |>
+    rename(PM2.5 = Sample.Value) |>
+    drop_na(),
+  air12 |>
+    mutate(Year = 2012) |>
+    rename(PM2.5 = Sample.Value) |>
+    drop_na()
+)
+glimpse(air_combined)
+```
+
+## Question 2
+
+```{r}
+pm_summary <- air_combined |>
+  group_by(Year) |>
+  summarize(
+    mean_pm2.5 = mean(PM2.5, na.rm = TRUE),
+    median_pm2.5 = median(PM2.5, na.rm = TRUE),
+    min_pm2.5 = min(PM2.5, na.rm = TRUE),
+    max_pm2.5 = max(PM2.5, na.rm = TRUE)
+  )
+glimpse(pm_summary)
+  
+air_combined <- air_combined |>
+  filter(`PM2.5` > 0)
+glimpse(air_combined)
+```
+
+## Question 3
+
+```{r plot, fig.align='center', fig.width=10, fig.height=3, fig.pos='H', out.width='100%'}
+plot <- ggplot(air_combined, aes(x = log2(PM2.5),
+                                 y = as.factor(Year), 
+                                 fill = as.factor(Year))) + 
+  geom_boxplot() +
+  scale_fill_brewer(palette = "Set1", name = "as.factor(Year)") +
+  labs(x = "Log2 PM2.5",
+       y = "Year of Measurement",
+       title = "Boxplot of PM Values in 1999 and 2012") +
+  theme_minimal()
+  
+plot
+```
+
+The median of PM2.5 in 2012 was slightly higher than in 1999, while 1999 shows a wider range. The extreme values were lower in 2012. Overall, this plot implies that air quality was worse in 2012. The higher median may be related to more urbanization and industry. In 1999, the values varied more, meaning there was more difference across sites. By 2012, the levels were more even but at a higher level.
+
+## Question 4
+
+```{r}
+ny_data <- air_combined |>
+  filter(State.Code == 36) |>
+  mutate(site.code = paste0(County.Code, ".",
+    str_pad(as.character(Site.ID), 4, pad = "0"))
+    )
+glimpse(ny_data)
+```
+
+## Question 5
+
+```{r}
+active_both_year <- ny_data |>
+  group_by(site.code) |>
+  filter(n_distinct(Year) == 2) |>
+  pull(site.code)
+unique(active_both_year)
+```
+
+## Question 6
+
+```{r}
+active_monitor <- ny_data |>
+  filter(site.code %in% active_both_year) |>  # both in 2 yrs
+  count(site.code) |> 
+  arrange(desc(n))                   
+active_monitor
+
+most_active_monitor <- active_monitor |>
+  slice_max(n, with_ties = TRUE)    # 有並列要保留  
+most_active_monitor
+```
+
+Most active monitor is 101.0003.
+
+## Question 7
+
+```{r}
+fig.align='center'
+air101.0003 <- ny_data |>
+  filter(site.code == "101.0003") |>
+  mutate(date = ymd(Date),
+         day_of_year = yday(date))
+
+glimpse(air101.0003)
+```
+
+## Question 8
+
+```{r,fig.align='center'}
+plot2 <- ggplot(air101.0003, aes(x = day_of_year,y = PM2.5)) +
+  geom_point() +
+  facet_wrap(~ Year, nrow = 1) +
+  labs(x = "Day of the Year",
+       y = "PM2.5") 
+plot2
+```
+
+For monitor 101.0003, the scatterplot shows that there is higher and more spread-out PM2.5 in 1999, mostly from summer to winter (July–December). In 2012, the values are lower and tighter, mostly in winter and spring (January–March). The peak day is not the same in the two years. In 1999, the distribution is wider with some extreme points, while in 2012, it is tightly clustered and lower. This means cleaner air in 2012 at this site.
+
+# PART II
+
+```{r}
+lalonde <- as_tibble(read.csv(url("https://bit.ly/3sJJKuk")))
+glimpse(lalonde)
+```
+
+## Question 9
+
+```{r}
+library(knitr)
+balance_table <- lalonde |>
+  mutate(treat_ind = if_else(treat == 1, "Treated", "Control")) |>
+  group_by(treat_ind) |>
+  reframe(covariates = c("age","education","black","hispanic","married","nodegree"),
+            mean_val  = c(
+              mean(age, na.rm = TRUE),
+              mean(education, na.rm = TRUE),
+              mean(black, na.rm = TRUE),
+              mean(hispanic, na.rm = TRUE),
+              mean(married, na.rm = TRUE),
+              mean(nodegree, na.rm = TRUE))) |>
+  pivot_wider( names_from  = treat_ind,
+               values_from = mean_val) |>
+  mutate(diff_in_means = Treated - Control)
+
+kable(balance_table)
+```
+
+## Question 10
+
+```{r}
+lalonde <- lalonde|>
+  mutate(change = re78 - re75)
+
+trt_change <- lalonde |>
+  filter(treat == 1) |>
+  summarize(trt_mean = mean(change, na.rm = TRUE))
+tibble(trt_change)
+
+ctr_change <- lalonde |>
+  filter(treat == 0) |>
+  summarize(ctr_mean = mean(change, na.rm = TRUE))
+tibble(ctr_change)
+
+ate <- tibble(ate = trt_change$trt_mean - ctr_change$ctr_mean)
+ate
+```
+
+The average salary of those who received job training (treated) was $2,910. The average salary of those who didn't received job training was $2,063. And the estimated average treatment effect was $847, which means those who received job training had an income change (re78 - re75) of $847 more than those who did not receive job training. 
+
+## Question 11
+
+On average, those who received job training (treated) had an income change (re78 - re75) of $847 more than those who did not receive job training. 
+
+## Question 12
+
+If Jimmy uses re75 as an outcome, we can't see the effect of the training program cause the data of 1975 is before the training program.
+Suzy uses the data from 1978 as the training program outcome is valid because it’s the post–treatment earnings. Therefore, the treated–control difference in 1978 estimates the ATE under random assignment.
+
+## Question 13
+
+```{r}
+ate_dropout <- lalonde |>
+  mutate(treatment = if_else(treat == 1, "Treated", "Control"),
+         drop_out = if_else(nodegree == 1, "Dropped out", "Finished HS")) |>
+  group_by(treatment, drop_out) |>
+  summarize(outcome_mean = mean(change, na.rm = TRUE)) |>
+  pivot_wider(names_from = treatment,
+              values_from = outcome_mean) |>
+  mutate(ATE = Treated - Control)
+kable(ate_dropout)
+```
+
+The ATE of dropped out is about $450. 
+And the ATE of finished HS is about $2,105.
+It means that the training program had a larger average impact on participants who finished high school, and it's about $1,655 more than for dropouts.
+
+## Question 14
+
+```{r}
+lalonde <- lalonde |> 
+  mutate(age_group = case_when(
+    age <= 30 ~ "30 and under",
+    age >= 31 & age <= 40 ~ "31 - 40",
+    age >= 41 ~ "Over 40",
+    TRUE  ~ NA))
+
+ate_age <- lalonde |>
+  mutate(treatment = if_else(treat == 1, "Treated", "Control")) |>
+  group_by(treatment, age_group) |>
+  summarize(age_outcome_mean = mean(change, na.rm = TRUE)) |>                                         
+  pivot_wider(names_from = treatment, values_from = age_outcome_mean) |>
+  mutate(ATE = Treated - Control)
+
+kable(ate_age)
+```
+
+## Question 15
+
+```{r,fig.align='center'}
+age_plot <- ggplot(ate_age, aes(x = age_group, y = ATE, , fill = age_group)) +
+  geom_bar(stat = "identity") + 
+  labs(x = "Age group",
+       y = "ATE (Treated − Control)",
+       title = "Average Treatment Effect (ATE) by Age Group") 
+age_plot
+```
+
+ATEs are positive across all age groups, which means the training program is associated with higher earnings for everyone. There is largest effect on ages 31–40, and the smallest on those over 40. This means the training program benefits the 31–40 group the most.
