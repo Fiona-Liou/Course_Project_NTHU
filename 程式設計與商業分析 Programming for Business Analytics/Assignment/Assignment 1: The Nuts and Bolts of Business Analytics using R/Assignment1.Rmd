@@ -1,0 +1,202 @@
+---
+title: "PBA Assignment1-111072219"
+author: "111072219"
+date: "2025-09-21"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(gapminder)
+```
+
+# PART I
+
+## Question1
+
+```{r}
+getwd()
+```
+
+```{r}
+list.files()
+```
+
+```{r}
+retail = read.csv("C:\\Users\\HSUAN\\Desktop\\PBA\\online_retail.csv")
+head(retail)
+```
+
+```{r}
+str(retail)
+```
+
+## Question 2
+
+```{r}
+## convert InvoiceDate to Date
+retail$InvoiceDate <- as.Date(retail$InvoiceDate, format = "%m/%d/%y")
+
+## filter data
+retail_filtered <- retail[retail$InvoiceDate >= as.Date('2011-07-01') & 
+                            retail$InvoiceDate <= as.Date('2011-08-31'),]
+
+## number of unique invoiceNo
+length(levels(as.factor(retail_filtered$InvoiceNo)))
+```
+
+## Question 3
+
+```{r}
+## mean of quality
+mean(retail_filtered$Quantity)
+```
+
+```{r}
+## mean of UnitPrice
+mean(retail_filtered$UnitPrice)
+```
+
+```{r}
+## data types of each column
+sapply(retail_filtered,class)
+```
+
+```{r}
+## number of unique values in each column
+length(levels(as.factor(retail_filtered$InvoiceNo)))
+```
+
+```{r}
+length(levels(as.factor(retail_filtered$StockCode)))
+```
+
+```{r}
+length(levels(as.factor(retail_filtered$Description)))
+```
+
+```{r}
+length(levels(as.factor(retail_filtered$Quantity)))
+```
+
+```{r}
+length(levels(as.factor(retail_filtered$InvoiceDate)))
+```
+
+```{r}
+length(levels(as.factor(retail_filtered$UnitPrice)))
+```
+
+```{r}
+length(levels(as.factor(retail_filtered$CustomerID)))
+```
+
+```{r}
+length(levels(as.factor(retail_filtered$Country)))
+```
+
+## Question 4
+
+```{r}
+## subset data of UK, Netherlands and Australia
+uk <- retail_filtered[retail_filtered$Country == "United Kingdom", ]
+netherlands <- retail_filtered[retail_filtered$Country == "Netherlands", ]
+australia <- retail_filtered[retail_filtered$Country == "Australia", ]
+```
+
+```{r}
+## average and standard deviation of UnitPrice for uk
+mean(uk$UnitPrice)
+sd(uk$UnitPrice)
+```
+
+```{r}
+## average and standard deviation of UnitPrice for netherlands
+mean(netherlands$UnitPrice)
+sd(netherlands$UnitPrice)
+```
+
+```{r}
+## average and standard deviation of UnitPrice for australia
+mean(australia$UnitPrice)
+sd(australia$UnitPrice)
+```
+
+```{r}
+## uk_invoices
+length(levels(as.factor(uk$InvoiceNo)))
+
+## uk_customers
+length(levels(as.factor(uk$CustomerID)))
+```
+
+```{r}
+## netherlands_invoices
+length(levels(as.factor(netherlands$InvoiceNo)))
+
+## netherlands_customers 
+length(levels(as.factor(netherlands$CustomerID)))
+```
+
+```{r}
+## australia_invoices 
+length(levels(as.factor(australia$InvoiceNo)))
+
+## australia_customers 
+length(levels(as.factor(australia$CustomerID)))
+```
+
+## Question 5
+
+```{r}
+## refund customer
+refund <- retail_filtered[substr(retail_filtered$InvoiceNo, start = 1, stop = 1) == "C", ]
+refund <- refund[!is.na(refund$CustomerID), ]
+cust_refund <- levels(as.factor(refund$CustomerID))
+## number of refund customer
+length(cust_refund)
+```
+
+## Question 6
+
+```{r}
+## mutate sales
+retail_filtered$Sales <- retail_filtered$Quantity * retail_filtered$UnitPrice
+
+## total sale for transactions where CustomerID is missing
+na_id <- retail_filtered[is.na(retail_filtered$CustomerID), ]
+head(na_id)
+sum(na_id$Sales, na.rm = TRUE)
+```
+
+# PART II
+
+## Question 7
+
+```{r}
+## basic information of gapminder
+glimpse(gapminder)
+dim(gapminder)
+sapply(gapminder, class)
+```
+
+## Question 8
+
+```{r}
+p <- ggplot(data = gapminder, aes(x = continent, y = lifeExp)) + 
+  geom_boxplot() + 
+  labs(
+    title = "Life Expectancy on Five Continent",
+    x = "Continent",
+    y = "Life expectancy at birth by year",
+    caption = "Source: Gapminder")
+p
+```
+
+## Question 9
+
+Oceania has the highest median life expectancy. We can tell this from the horizontal line (the median line) inside the box. Oceania’s median line is at the highest.
