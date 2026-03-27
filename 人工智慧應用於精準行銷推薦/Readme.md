@@ -2,7 +2,7 @@
 
 This project explores the cutting-edge landscape of Self-Supervised Learning (SSL) and its potential to revolutionize the retail industry by solving the persistent challenge of "information overload".
 
-## Key Highlights
+## Highlights
 - Systematic Taxonomy: Categorized SSL methodologies from over 170+ academic papers into three primary frameworks: Contrastive, Reconstructive, and Adversarial learning.
 - Algorithmic Deep-Dive:
   - Analyzed how Generative Models (VAE, MAE, and Denoising Diffusion) capture underlying data patterns to enhance recommendation performance.
@@ -29,7 +29,7 @@ This project analyzes how UNIQLO utilizes an OMO (Online-Merge-Offline) ecosyste
   - Case Study: Digital "Scratch Card" campaigns resulted in participants consuming 1.25x more than average users.
 - AI-Driven Engagement: Analyzed the role of the U-Butler (Chatbot), which collected over 1.8M data points and contributed to a 10% increase in sales.
 
-## Key Outcomes
+## Outcomes
 - Demonstrated how Data-driven Insights transform raw behavioral data into actionable marketing strategies.
 - Showcased a holistic understanding of how MarTech (Marketing Technology) enhances customer loyalty and conversion rates.
 
