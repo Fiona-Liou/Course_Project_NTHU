@@ -1,5 +1,5 @@
 # Typhoon Loss Risk Analysis & Differential Actuarial Pricing 
-Analyzing food environments and give a policy recommendation.
+Analyzing Typhoon characteristics and region losses in Taiwan, and give the recommendation about the Actuarial Price for Government.
 
 ## Project Overview
 This project investigates the 
